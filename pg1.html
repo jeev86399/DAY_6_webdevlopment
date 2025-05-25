@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Movies App</title>
+  <title>Cat Info App</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
     body {
@@ -24,14 +24,6 @@
       text-align: center;
     }
 
-    input[type="text"] {
-      width: 80%;
-      padding: 8px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
     button {
       padding: 8px 15px;
       background-color: #1976d2;
@@ -45,12 +37,12 @@
       background-color: #0d47a1;
     }
 
-    .movie-info {
+    .cat-info {
       margin-top: 20px;
       text-align: left;
     }
 
-    .movie-poster {
+    .cat-image {
       max-width: 100%;
       border-radius: 4px;
       margin-bottom: 15px;
@@ -64,20 +56,16 @@
 </head>
 <body>
   <div id="app">
-    <h1>Movies Application</h1>
-    <input type="text" v-model="title" placeholder="Enter movie title" @keyup.enter="getMovie" />
-    <button @click="getMovie">Search</button>
+    <h1>Cat Info App 🐱</h1>
+    <button @click="getCat">Get Random Cat</button>
 
     <div v-if="error" class="error">{{ error }}</div>
 
-    <div v-if="movie" class="movie-info">
-      <h2>{{ movie.Title }} ({{ movie.Year }})</h2>
-      <img v-if="movie.Poster !== 'N/A'" :src="movie.Poster" alt="Movie Poster" class="movie-poster" />
-      <p><strong>Genre:</strong> {{ movie.Genre }}</p>
-      <p><strong>Plot:</strong> {{ movie.Plot }}</p>
-      <p><strong>Director:</strong> {{ movie.Director }}</p>
-      <p><strong>Actors:</strong> {{ movie.Actors }}</p>
-      <p><strong>IMDB Rating:</strong> {{ movie.imdbRating }}</p>
+    <div v-if="cat" class="cat-info">
+      <h2>{{ cat.breeds[0]?.name || 'Unknown Breed' }}</h2>
+      <img :src="cat.url" alt="Cat Image" class="cat-image" />
+      <p><strong>Temperament:</strong> {{ cat.breeds[0]?.temperament || 'N/A' }}</p>
+      <p><strong>Description:</strong> {{ cat.breeds[0]?.description || 'No info available.' }}</p>
     </div>
   </div>
 
@@ -87,29 +75,20 @@
     createApp({
       data() {
         return {
-          title: '',
-          movie: null,
+          cat: null,
           error: null,
-          apiKey: "258adae9" // Replace with your OMDb API key
+          apiKey: "live_SxedOi5zHBrm5YeUfpqKK3IRvWVtpUh7jZN4MsHs4SoU3YmOQCV8sy7OJemcV9uL" // Replace with your actual Cat API key
         };
       },
       methods: {
-        async getMovie() {
+        async getCat() {
           this.error = null;
-          this.movie = null;
-          if (!this.title) {
-            this.error = 'Please enter a movie title.';
-            return;
-          }
+          this.cat = null;
           try {
-            const response = await fetch(
-                `https://www.omdbapi.com/?t=${encodeURIComponent(this.title)}&apikey=${this.apiKey}`);
-
+            const response = await fetch(`https://api.thecatapi.com/v1/images/search?include_breeds=true&api_key=${this.apiKey}`);
             const data = await response.json();
-            if (data.Response === 'False') {
-              throw new Error(data.Error);
-            }
-            this.movie = data;
+            if (!data.length) throw new Error('No cat found!');
+            this.cat = data[0];
           } catch (err) {
             this.error = err.message;
           }
